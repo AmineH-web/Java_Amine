@@ -1,140 +1,136 @@
-📌 Présentation générale
+# Projet Java — Gestion des Salaires (OCP)
 
-Ce projet consiste à développer une application Java dédiée à la gestion des employés et de leurs salaires au sein de l’entreprise OCP.
-L’application met en pratique les concepts de la programmation orientée objet et s’appuie sur :
+Ce dépôt contient une application Java (JavaFX + MySQL) de gestion des salaires pour différents types d’employés. Ce document présente la structure du projet et explique le rôle de chaque fichier/dossier pour faciliter la compréhension et la contribution sur GitHub.
 
-JavaFX pour l’interface graphique
+## Arborescence
 
-JDBC + MySQL pour la gestion et la persistance des données
-
-Elle permet de gérer différents types d’employés, avec prise en compte des règles de calcul de salaire et des cas particuliers tels que les employés « à risque ».
-
-📁 Structure du projet
+```
 src/
-│── basedonne.sql
-│── Main.java
-│
-├── connection/
-│   └── DBConnection.java
-│
-├── Controller/
-│   └── Controller.java
-│
-├── implementation/
-│   └── GestionEmployeDB.java
-│
-├── modele/
-│   ├── Employe.java
-│   ├── Commercial.java
-│   ├── Vendeur.java
-│   ├── Representant.java
-│   ├── Producteur.java
-│   ├── Manutentionnaire.java
-│   ├── ProdARisque.java
-│   ├── ManutARisque.java
-│   └── PrimeR.java
-│
-└── view/
-    └── Interface.fxml
+  basedonne.sql
+  Main.java
+  connection/
+    DBConnection.java
+  Controller/
+    Controller.java
+  implementation/
+    GestionEmployeDB.java
+  modele/
+    Commercial.java
+    Employe.java
+    ManutARisque.java
+    Manutentionnaire.java
+    PrimeR.java
+    ProdARisque.java
+    Producteur.java
+    Representant.java
+    Vendeur.java
+  view/
+    Interface.fxml
+projetjava.iml
+```
 
-🧩 Description des composants
-🔹 Main.java
+## Description des éléments
 
-Point d’entrée de l’application.
-Il initialise JavaFX, charge l’interface graphique et affiche la fenêtre principale.
+- projetjava.iml
+  - Fichier de configuration du projet pour IntelliJ IDEA. Il décrit les modules, dépendances et paramètres spécifiques à l’IDE. Ne contient pas de code.
 
-🔹 Base de données (basedonne.sql)
+### src/
+Racine des sources Java et des ressources.
 
-Script SQL permettant de :
+- src/basedonne.sql
+  - Script SQL de création et initialisation de la base de données MySQL (tables, colonnes, types). À exécuter dans votre SGBD pour préparer l’environnement.
+  - Contient notamment la définition de la table `Employe` utilisée par `GestionEmployeDB`.
 
-créer la base de données MySQL,
+- src/Main.java
+  - Point d’entrée de l’application JavaFX.
+  - Lance l’interface graphique définie dans `view/Interface.fxml`.
+  - Configure la fenêtre principale (titre, scène, affichage).
 
-définir les tables nécessaires,
+#### src/connection/
+- DBConnection.java
+  - Fournit une méthode pour obtenir une connexion JDBC à MySQL.
+  - Gère l’URL, l’utilisateur, le mot de passe et le chargement du driver.
+  - Utilisé par les classes d’accès aux données (DAO) comme `GestionEmployeDB`.
 
-initialiser la structure utilisée par l’application.
+#### src/Controller/
+- Controller.java
+  - Contrôleur JavaFX associé à `Interface.fxml`.
+  - Contient la logique de l’interface: récupération des champs, validation, actions sur boutons, interaction avec le modèle et la base.
+  - Appelle `GestionEmployeDB` pour les opérations CRUD (ajouter un employé, etc.).
 
-🔹 Connexion à la base (connection/)
+#### src/implementation/
+- GestionEmployeDB.java
+  - Couche d’accès aux données (DAO) pour la table `Employe`.
+  - Prépare et exécute des requêtes SQL via JDBC (INSERT, SELECT, UPDATE, DELETE).
+  - Exemple: `addEmploye(Employe e, String type, double value, boolean risk)` insère un employé dans la base.
+  - Attention: la requête préparée doit définir toutes les valeurs des paramètres (indexes 1..N) en cohérence avec les colonnes.
 
-DBConnection.java
-Gère la connexion JDBC à MySQL (URL, identifiants, driver).
-Utilisée par la couche d’accès aux données.
+#### src/modele/
+Modèles métiers (objets représentant les types d’employés et les règles de calcul de salaire).
 
-🔹 Contrôleur JavaFX (Controller/)
+- Employe.java
+  - Classe de base (abstraite ou concrète selon votre implémentation) pour un employé.
+  - Propriétés communes: id, nom, âge, date d’embauche, etc.
+  - Méthode `calculerSalaire()` à surcharger/implémenter selon le type d’employé.
 
-Controller.java
-Assure la liaison entre l’interface graphique et la logique métier :
+- Commercial.java
+  - Employé de type commercial. Salaire basé sur chiffre d’affaires et/ou commissions.
 
-récupération des données saisies,
+- Vendeur.java
+  - Spécialisation possible de Commercial (selon votre conception). Salaire lié aux ventes.
 
-validation des champs,
+- Representant.java
+  - Spécialisation possible de Commercial pour les représentants. Salaire lié au volume de représentation.
 
-gestion des événements (boutons),
+- Producteur.java
+  - Employé produisant des pièces/unité. Salaire généralement basé sur le nombre d’unités produites.
 
-appel des méthodes CRUD via la couche DAO.
+- Manutentionnaire.java
+  - Employé dont le salaire dépend souvent des heures/manutentions.
 
-🔹 Accès aux données (implementation/)
+- PrimeR.java
+  - Composant/stratégie de calcul de primes de risque (si applicable). Peut ajouter une prime au salaire pour certains types d’employés exposés.
 
-GestionEmployeDB.java
-Implémente les opérations CRUD (Create, Read, Update, Delete) sur la table Employe.
-Utilise JDBC pour exécuter les requêtes SQL.
+- ProdARisque.java
+  - Variante « à risque » du Producteur (salaire différent avec prime de risque). Si votre logique métier précise que seuls certains types sont à risque, ajustez l’utilisation de cette classe.
 
-🔹 Modèle métier (modele/)
+- ManutARisque.java
+  - Variante « à risque » du Manutentionnaire (salaire différent avec prime de risque).
 
-Contient les classes représentant les différents types d’employés :
+Note métier: Vous avez indiqué que seuls 2 types d’employés peuvent être à risque (Producteur et Manutentionnaire). Assurez-vous que l’interface et la base reflètent cela (champ `a_risque` pertinent uniquement pour ces types).
 
-Employe : classe de base
+#### src/view/
+- Interface.fxml
+  - Vue JavaFX (FXML) décrivant l’interface utilisateur.
+  - Liée à `Controller.java` via `fx:controller`.
+  - Contient les nœuds UI (TextField, ComboBox pour le type d’employé, CheckBox pour « à risque » s’il s’applique, boutons d’actions, tableaux/lists).
 
-Commercial, Vendeur, Representant
+## Flux principal de l’application
+1. `Main.java` démarre JavaFX et charge `Interface.fxml`.
+2. `Controller.java` initialise les composants UI, écoute les actions utilisateur et valide les données.
+3. À l’ajout d’un employé, `Controller` construit un objet du modèle (`Producteur`, `Manutentionnaire`, etc.) et appelle `GestionEmployeDB`.
+4. `GestionEmployeDB` utilise `DBConnection` pour insérer les données dans MySQL conformément au schéma défini dans `basedonne.sql`.
 
-Producteur, Manutentionnaire
+## Points d’attention et bonnes pratiques
+- Cohérence schéma/DAO:
+  - La requête `INSERT` doit correspondre exactement aux colonnes. Par exemple:
+    - `INSERT INTO Employe (id, nom, age, date_entree, type_employe, valeur, salaire, a_risque) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    - Il faut définir 8 paramètres: `setInt`/`setLong` pour `id` si géré manuellement, `setString` pour `nom`, etc. Si `id` est AUTO_INCREMENT, ne l’incluez pas dans la liste des colonnes et réduisez le nombre de `?`.
+  - L’erreur « No value specified for parameter 8 » signifie qu’un des placeholders `?` n’a pas reçu de valeur (par exemple, `id` ou `a_risque`).
+- Types « à risque »:
+  - Si seuls Producteur et Manutentionnaire sont à risque, la UI doit activer la case « à risque » uniquement pour ces types et la DAO doit gérer ce champ en conséquence.
+- JavaFX Controller:
+  - Assurez-vous que `fx:id` dans le FXML correspond aux champs annotés `@FXML` dans `Controller.java`.
+  - Vérifiez que le chemin du FXML dans `Main.java` est correct: `FXMLLoader.load(getClass().getResource("/Interface.fxml"))` implique que `Interface.fxml` est dans le classpath racine (resources). Si nécessaire, déplacez-le ou ajustez le chemin.
 
-ProdARisque, ManutARisque : variantes avec prime de risque
+## Configuration et exécution
+- Dépendances requises:
+  - Java 8+ (JavaFX si non inclus selon votre JDK).
+  - MySQL Connector/J (driver JDBC) dans le classpath.
+- Base de données:
+  - Exécutez `src/basedonne.sql` pour créer la base et les tables.
+  - Mettez à jour `DBConnection.java` avec vos identifiants et URL.
+- Lancement:
+  - Exécutez `Main.java`. L’UI se lance et vous pouvez ajouter des employés.
 
-PrimeR : gestion de la prime de risque
 
-Chaque classe implémente ou spécialise le calcul du salaire selon le type d’employé.
-
-🔹 Interface graphique (view/)
-
-Interface.fxml
-Définit l’interface utilisateur en JavaFX (champs de saisie, choix du type d’employé, options « à risque », boutons d’actions).
-Liée au contrôleur via fx:controller.
-
-🔄 Fonctionnement global
-
-L’application démarre depuis Main.java.
-
-L’interface graphique est chargée via Interface.fxml.
-
-Le contrôleur traite les actions utilisateur.
-
-Les objets métier sont créés selon le type d’employé.
-
-Les données sont enregistrées ou récupérées depuis MySQL via JDBC.
-
-⚠️ Remarques importantes
-
-Seuls Producteur et Manutentionnaire peuvent être marqués comme employés « à risque ».
-
-La structure de la base de données doit rester cohérente avec les requêtes JDBC.
-
-Les identifiants de connexion doivent être configurés dans DBConnection.java.
-
-▶️ Exécution du projet
-Prérequis
-
-Java 8 ou supérieur
-
-JavaFX
-
-MySQL
-
-MySQL Connector/J (JDBC)
-
-Étapes
-
-Exécuter le script basedonne.sql dans MySQL.
-
-Configurer la connexion dans DBConnection.java.
-
-Lancer Main.java.
